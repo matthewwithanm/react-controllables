@@ -1,13 +1,12 @@
 {
   "name": "react-controllables",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Easily create controllable components",
   "main": "./lib/index.js",
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "coffee-script": "~1.7.1",
     "browserify": "~3.33.0",
