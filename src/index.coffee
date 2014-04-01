@@ -5,7 +5,7 @@ invariant = require 'react/lib/invariant'
 
 
 getControllableValue = (name, state, props) -> props[name] ? state[name]
-capFirst = (str) -> "#{ str.charAt(0).toUpperCase() }#{ str[1...] }"
+capFirst = (str) -> "#{ str[...1].toUpperCase() }#{ str[1...] }"
 
 
 ControllablesMixin =
