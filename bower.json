@@ -1,0 +1,22 @@
+{
+  "name": "react-controllables",
+  "version": "0.1.0",
+  "authors": [
+    "Matthew Dapena-Tretter <m@tthewwithanm.com>"
+  ],
+  "description": "Easily create controllable components",
+  "main": "./standalone/react-controllables.js",
+  "keywords": [
+    "react-component",
+    "react"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/matthewwithanm/react-controllables",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
