@@ -57,12 +57,18 @@ var TabBar = React.createClass({
       defaultSelectedTabIndex: 0
     }
   },
+  handleClick: function(event) {
+    // Set state normally, using `setState`.
+    var el = event.target;
+    var index = Array.prototype.indexOf.call(el.parentNode.children, el);
+    this.setState({selectedTabIndex: index});
+  },
   render: function() {
     // Use `this.getControllableValue` instead of `this.state` for accessing
     // state.
     var selectedTabIndex = this.getControllableValue('selectedTabIndex');
     return (
-      <ul>
+      <ul onClick={ this.handleClick }>
         <li className={ selectedTabIndex == 0 ? 'selected' }>Tab Zero!</li>
         <li className={ selectedTabIndex == 1 ? 'selected' }>Tab One!</li>
         <li className={ selectedTabIndex == 2 ? 'selected' }>Tab Two!</li>
