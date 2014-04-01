@@ -108,7 +108,7 @@ var App = React.createClass({
 ```
 
 (Callbacks are added by the ControllablesMixin using the convention
-"on<Name>Change".)
+"onSomethingChange".)
 
 
 Advanced
