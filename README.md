@@ -32,7 +32,7 @@ How
 ---
 
 1. Include the ControllablesMixin
-2. Specify state variables that can be controllable by adding a `controllables`
+2. Specify state variables that can be controlled by adding a `controllables`
    array to your spec.
 3. Modify your component to use `this.getControllableValue()` instead of
    `this.state` whenever you're reading state values.
