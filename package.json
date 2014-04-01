@@ -7,7 +7,6 @@
     "test": "test"
   },
   "dependencies": {
-    "xtend": "~2.2.0"
   },
   "devDependencies": {
     "coffee-script": "~1.7.1",
