@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var n;"undefined"!=typeof window?n=window:"undefined"!=typeof global?n=global:"undefined"!=typeof self&&(n=self),n.ControllablesMixin=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-var ControllablesMixin, capFirst, getControllableValue, invariant;
+var ControllablesMixin, callbackName, capFirst, getControllableValue, invariant;
 
 invariant = _dereq_('react/lib/invariant');
 
@@ -9,7 +9,11 @@ getControllableValue = function(name, state, props) {
 };
 
 capFirst = function(str) {
-  return "" + (str.charAt(0).toUpperCase()) + str.slice(1);
+  return "" + (str.slice(0, 1).toUpperCase()) + str.slice(1);
+};
+
+callbackName = function(prop) {
+  return "on" + (capFirst(prop)) + "Change";
 };
 
 ControllablesMixin = {
@@ -31,16 +35,16 @@ ControllablesMixin = {
     return getControllableValue(name, this.state, this.props);
   },
   componentDidUpdate: function(prevProps, prevState) {
-    var cb, name, newValue, oldValue, _base, _i, _len, _ref;
+    var name, newValue, oldValue, _base, _i, _len, _name, _ref;
     _ref = this.controllables;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       name = _ref[_i];
+      invariant((this.props[callbackName(name)] == null) || (this.props[name] == null), "It doesn't make sense to add change callbacks for controlled properties. Either remove the callback or let it manage its own state. (" + name + ")");
       newValue = this.state[name];
       oldValue = getControllableValue(name, prevState, prevProps);
       if (newValue !== oldValue) {
-        cb = "on" + (capFirst(name)) + "Change";
-        if (typeof (_base = this.props)[cb] === "function") {
-          _base[cb](newValue, oldValue);
+        if (typeof (_base = this.props)[_name = callbackName(name)] === "function") {
+          _base[_name](newValue, oldValue);
         }
       }
     }
