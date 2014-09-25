@@ -40,11 +40,12 @@ ControllablesMixin = {
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       name = _ref[_i];
       newValue = this.state[name];
+      if (newValue === prevState[name]) {
+        continue;
+      }
       oldValue = getControllableValue(name, prevState, prevProps);
-      if (newValue !== oldValue) {
-        if (typeof (_base = this.props)[_name = callbackName(name)] === "function") {
-          _base[_name](newValue, oldValue);
-        }
+      if (typeof (_base = this.props)[_name = callbackName(name)] === "function") {
+        _base[_name](newValue, oldValue);
       }
     }
   }
