@@ -39,7 +39,6 @@ ControllablesMixin = {
     _ref = this.controllables;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       name = _ref[_i];
-      invariant((this.props[callbackName(name)] == null) || (this.props[name] == null), "It doesn't make sense to add change callbacks for controlled properties. Either remove the callback or let it manage its own state. (" + name + ")");
       newValue = this.state[name];
       oldValue = getControllableValue(name, prevState, prevProps);
       if (newValue !== oldValue) {
