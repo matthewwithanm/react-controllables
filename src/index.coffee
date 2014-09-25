@@ -24,9 +24,9 @@ ControllablesMixin =
   componentDidUpdate: (prevProps, prevState) ->
     for name in @controllables
       newValue = @state[name]
+      continue if newValue is prevState[name]
       oldValue = getControllableValue name, prevState, prevProps
-      if newValue isnt oldValue
-        @props[callbackName name]? newValue, oldValue
+      @props[callbackName name]? newValue, oldValue
     return
 
 
