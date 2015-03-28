@@ -3,8 +3,7 @@ const {assert} = chai;
 const {Simulate, findRenderedDOMComponentWithClass, findRenderedComponentWithType: find} = React.addons.TestUtils;
 
 
-const DumbThing = React.createClass({
-  displayName: 'Thing',
+class DumbThing extends React.Component {
   render() {
     return (
       <div
@@ -13,11 +12,11 @@ const DumbThing = React.createClass({
         { `VALUE:${ this.props.value }` }
       </div>
     );
-  },
+  }
   handleClick() {
     if (this.props.onValueChange) this.props.onValueChange(this.props.value + 1);
-  },
-});
+  }
+}
 
 const Thing = Controllables.controllable(DumbThing, {value: 0});
 
