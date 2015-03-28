@@ -23,7 +23,7 @@ const Thing = React.createClass({
 
 
 function assertRenderedIncludes(component, str) {
-  assert.include(React.renderComponentToString(component), `VALUE:${ str }`);
+  assert.include(React.renderToString(component), `VALUE:${ str }`);
 }
 
 
@@ -49,7 +49,7 @@ describe('react-controllables', () => {
 
     it('should not change the controllable value itself', () => {
       const el = document.createElement('div');
-      const thing = React.renderComponent(<Thing value={2} />, el);
+      const thing = React.render(<Thing value={2} />, el);
       thing.click();
       assert.equal(thing.getControllableValue('value'), 2);
     });
@@ -70,7 +70,7 @@ describe('react-controllables', () => {
         },
       });
       const el = document.createElement('div');
-      const app = React.renderComponent(<App />, el);
+      const app = React.render(<App />, el);
       app.refs.thing.click();
       assert.equal(app.state.value, 3);
       assert.equal(app.refs.thing.getControllableValue('value'), 3);
@@ -92,7 +92,7 @@ describe('react-controllables', () => {
         },
       });
       const el = document.createElement('div');
-      const app = React.renderComponent(<App />, el);
+      const app = React.render(<App />, el);
       app.refs.thing.click();
       assert.equal(app.state.value, 3);
       assert.equal(app.refs.thing.getControllableValue('value'), 3);
