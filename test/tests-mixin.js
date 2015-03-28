@@ -3,24 +3,26 @@ const {assert} = chai;
 const {Simulate, findRenderedDOMComponentWithClass, findRenderedComponentWithType: find} = React.addons.TestUtils;
 
 
-class DumbThing extends React.Component {
+const Thing = React.createClass({
+  displayName: 'Thing',
+  mixins: [Controllables.Mixin],
+  controllables: ['value'],
+  getDefaultProps() {
+    return {defaultValue: 0};
+  },
   render() {
     return (
       <div
           className="clickme"
-          onClick={this.handleClick.bind(this)}>
-        { `VALUE:${ this.props.value }` }
+          onClick={this.handleClick}>
+        { `VALUE:${ this.getControllableValue('value') }` }
       </div>
     );
-  }
+  },
   handleClick() {
-    if (this.props.onValueChange) this.props.onValueChange(this.props.value + 1);
-  }
-}
-
-DumbThing.defaultProps = {value: 0};
-
-const Thing = Controllables.controllable(DumbThing, ['value']);
+    this.setState({value: this.getControllableValue('value') + 1});
+  },
+});
 
 
 function click(tree) {
@@ -33,7 +35,7 @@ function assertRenderedIncludes(component, str) {
 }
 
 
-describe('higher-order component', () => {
+describe('mixin', () => {
 
   describe('an uncontrolled state', () => {
 
@@ -57,7 +59,7 @@ describe('higher-order component', () => {
       const el = document.createElement('div');
       const thing = React.render(<Thing value={2} />, el);
       click(thing);
-      assert.equal(thing.props.value, 2);
+      assert.equal(thing.getControllableValue('value'), 2);
     });
 
     it('should invoke onBlahChange callbacks', () => {
@@ -78,7 +80,7 @@ describe('higher-order component', () => {
       const app = React.render(<App />, el);
       click(app);
       assert.equal(app.state.value, 3);
-      assert.equal(find(app, DumbThing).props.value, 3);
+      assert.equal(find(app, Thing).getControllableValue('value'), 3);
     });
 
     it('should invoke onBlahChange callbacks even when controlled', () => {
@@ -99,7 +101,7 @@ describe('higher-order component', () => {
       const app = React.render(<App />, el);
       click(app);
       assert.equal(app.state.value, 3);
-      assert.equal(find(app, DumbThing).props.value, 3);
+      assert.equal(find(app, Thing).getControllableValue('value'), 3);
     });
 
   });

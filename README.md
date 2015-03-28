@@ -31,60 +31,72 @@ it *controllable*.
 How
 ---
 
-1. Include the ControllablesMixin
-2. Specify state variables that can be controlled by adding a `controllables`
-   array to your spec.
-3. Modify your component to use `this.getControllableValue()` instead of
-   `this.state` whenever you're reading state values.
+1. Write a "dumb" component that doesn't manage its state at all but accepts one
+   or more props and corresponding `onPROPNAMEChange` callbacks.
+2. Use `controllable` to create a higher-order component from the dumb one.
+
+<small>
+  react-controllables used to be implemented with a mixin and have a different
+  (more complicated!) usage. The mixin is still included at
+  `react-controllables/mixin` (or `Controllables.Mixin` in the standalone build)
+  but deprecated. Switch!
+</small>
 
 
 Example
 -------
 
-We'll use our TabBar example and represent its state as an integer corresponding
-to the selected tab named "selectedTabIndex".
+We'll use our TabBar example and represent the selection as an integer using the
+selectedTabIndex prop.
 
 ```jsx
-var TabBar = React.createClass({
-  displayName: 'TabBar',
-  mixins: [ControllablesMixin],
-  controllables: ['selectedTabIndex'],
-  getDefaultProps: function() {
-    // Instead of using `getInitialState` to provide a default value, use
-    // `getDefaultProps` and prepend "default" to your variable name. (This is
-    // like "defaultValue" on `<input>`s.)
-    return {
-      defaultSelectedTabIndex: 0
-    }
-  },
+class TabBar extends React.Component {
+
   handleClick: function(event) {
-    // Set state normally, using `setState`.
+    // Call the `onSelectedTabIndexChange` callback with the new value.
+    if (!this.props.onSelectedTabIndexChange) return;
     var el = event.target;
     var index = Array.prototype.indexOf.call(el.parentNode.children, el);
-    this.setState({selectedTabIndex: index});
-  },
+    this.props.onSelectedTabIndexChange(index);
+  }
+
   render: function() {
-    // Use `this.getControllableValue` instead of `this.state` for accessing
-    // state.
-    var selectedTabIndex = this.getControllableValue('selectedTabIndex');
+    var selectedTabIndex = this.props.selectedTabIndex;
     return (
-      <ul onClick={ this.handleClick }>
+      <ul onClick={ this.handleClick.bind(this) }>
         <li className={ selectedTabIndex == 0 ? 'selected' }>Tab Zero!</li>
         <li className={ selectedTabIndex == 1 ? 'selected' }>Tab One!</li>
         <li className={ selectedTabIndex == 2 ? 'selected' }>Tab Two!</li>
       </ul>
     );
   }
-});
+
+}
+
+TabBar.defaultProps = {selectedTabIndex: 0};
+
+TabBar.propTypes = {
+  selectedTabIndex: PropTypes.number.isRequired,
+  onSelectedTabIndexChange: PropTypes.func,
+};
 ```
 
-Now we can use our TabBar like we used to, and have it manage its own state:
+Next, use the controllable util to create a higher-order component, telling it
+which props you want to be managed.
+
+```jsx
+import controllable from 'react-controllables';
+TabBar = controllable(TabBar, ['selectedTabIndex']);
+```
+
+We now have a TabBar component that can store its own state OR be controlled!
+Just use it like normal:
 
 ```jsx
 <TabBar />
 ```
 
-We can specify a value for it to start with:
+We can specify a value for it to start with using `defaultPROPNAME`:
 
 ```jsx
 <TabBar defaultSelectedTabIndex={ 2 } />
@@ -94,51 +106,28 @@ Or we can make it a *controlled* component and manage the state at a higher
 level:
 
 ```jsx
-var App = React.createClass({
-  getInitialState: function() {
-    return {
-      tabNum: 0
-    }
-  },
-  handleTabChange: function(newValue) {
-    this.setState({tabNum: newValue});
-  },
-  render: function() {
-    return (
-      <TabBar
-        selectedTabIndex={ this.state.tabNum }
-        onSelectedTabIndexChange={ this.handleTabChange } />
-    );
-  }
-});
+<TabBar
+  selectedTabIndex={ indexFromSomewhereElse }
+  onSelectedTabIndexChange={ handler } />
 ```
-
-(Callbacks are added by the ControllablesMixin using the convention
-"onSomethingChange".)
 
 
 Advanced
 --------
 
-Unlike React inputs, components built with the ControllablesMixin can't really
-be said to be either "controlled" or "uncontrolled" generally. That's because a
+Unlike React inputs, components built with react-controllables can't really be
+said to be either "controlled" or "uncontrolled" generally. That's because a
 single component can have both controlled and uncontrolled values. For example,
 consider this variation of our TabBar:
 
 ```jsx
-var TabBar = React.createClass({
-  displayName: 'TabBar',
-  mixins: [ControllablesMixin],
-  controllables: ['selectedTabIndex', 'color'],
-  .
-  .
-  .
+TabBar = controllables(TabBar, ['selectedTabIndex', 'color']);
 ```
 
 We could have both "selectedTabIndex" and "color" be controlled:
 
 ```jsx
-<TabBar selectedTabIndex={ 2 } color={ 'blue' } />
+<TabBar selectedTabIndex={ 2 } color="blue" />
 ```
 
 Or neither:
@@ -153,7 +142,7 @@ initial internal state.)
 Or only one!
 
 ```jsx
-<TabBar color={ 'blue' } />
+<TabBar color="blue" />
 ```
 
 

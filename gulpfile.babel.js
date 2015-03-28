@@ -25,27 +25,27 @@ gulp.task('bump:patch', () => { bump('patch'); });
 gulp.task('build:node', () => {
   gulp.src('./src/*.js')
     .pipe(babel().on('error', gutil.log))
-    .pipe(gulp.dest('./lib'));
+    .pipe(gulp.dest('./lib', {overwrite: true}));
 });
 
 gulp.task('build:browser', ['build:node'], () => {
-  gulp.src('./lib/*.js')
+  gulp.src('./lib/standalone.js')
     .pipe(browserify({
-      standalone: 'ControllablesMixin',
+      standalone: 'Controllables',
       transform: ['browserify-shim'],
     }))
     .pipe(rename('react-controllables.js'))
-    .pipe(gulp.dest('./standalone/'));
+    .pipe(gulp.dest('./standalone/', {overwrite: true}));
 });
 
 gulp.task('build:tests', () => {
-  gulp.src('./test/tests.js')
+  gulp.src(['./test/tests**.js', '!**/*-compiled.js'])
     .pipe(babel().on('error', gutil.log))
     .pipe(browserify({
       transform: ['browserify-shim'],
     }))
-    .pipe(rename('tests-compiled.js'))
-    .pipe(gulp.dest('./test/'));
+    .pipe(rename({suffix: '-compiled'}))
+    .pipe(gulp.dest('./test/', {overwrite: true}));
 });
 
 gulp.task('testserver', connect.server({
