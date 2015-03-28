@@ -23,13 +23,9 @@ var _inherits = function (subClass, superClass) { if (typeof superClass !== "fun
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var React = _interopRequire((window.React));
 
 var keys = _interopRequire(_dereq_("object-keys"));
-
-var assign = _interopRequire(_dereq_("object-assign"));
 
 var omit = _interopRequire(_dereq_("lodash.omit"));
 
@@ -62,6 +58,22 @@ var mapKeys = function (obj, mapper) {
   }
   return newObj;
 };
+var merge = function () {
+  for (var _len = arguments.length, sources = Array(_len), _key = 0; _key < _len; _key++) {
+    sources[_key] = arguments[_key];
+  }
+
+  var target = {};
+  sources.forEach(function (source) {
+    for (var k in source) {
+      if (!source.hasOwnProperty(k)) continue;
+      var val = source[k];
+      if (val == null) continue; // `null` and `undefined` are treated the same as a missing key
+      target[k] = val;
+    }
+  });
+  return target;
+};
 
 module.exports = function (Component) {
   var controllableProps = arguments[1] === undefined ? [] : arguments[1];
@@ -73,8 +85,9 @@ module.exports = function (Component) {
     var callbackName = toCallbackName(prop);
     callbacks[callbackName] = function (value) {
       var originalCb = this.props[callbackName];
+      var oldValue = this.props[prop] == null ? this.state[prop] : this.props[prop];
       this.setState(_defineProperty({}, prop, value));
-      if (originalCb) originalCb(value);
+      if (originalCb) originalCb(value, oldValue);
     };
   });
 
@@ -104,8 +117,8 @@ module.exports = function (Component) {
     _createClass(ControllableWrapper, {
       render: {
         value: function render() {
-          var props = assign(omit(this.props, defaultsProps), this.callbacks);
-          return React.createElement(Component, _extends({}, this.state, props));
+          var props = merge(this.state, omit(this.props, defaultsProps), this.callbacks);
+          return React.createElement(Component, props);
         }
       }
     });
@@ -113,7 +126,7 @@ module.exports = function (Component) {
     return ControllableWrapper;
   })(React.Component);
 };
-},{"lodash.mapValues":6,"lodash.omit":17,"lodash.pick":35,"object-assign":47,"object-keys":48}],3:[function(_dereq_,module,exports){
+},{"lodash.mapValues":6,"lodash.omit":17,"lodash.pick":35,"object-keys":47}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -2656,34 +2669,6 @@ module.exports=_dereq_(34)
 },{}],47:[function(_dereq_,module,exports){
 'use strict';
 
-function ToObject(val) {
-	if (val == null) {
-		throw new TypeError('Object.assign cannot be called with null or undefined');
-	}
-
-	return Object(val);
-}
-
-module.exports = Object.assign || function (target, source) {
-	var from;
-	var keys;
-	var to = ToObject(target);
-
-	for (var s = 1; s < arguments.length; s++) {
-		from = arguments[s];
-		keys = Object.keys(Object(from));
-
-		for (var i = 0; i < keys.length; i++) {
-			to[keys[i]] = from[keys[i]];
-		}
-	}
-
-	return to;
-};
-
-},{}],48:[function(_dereq_,module,exports){
-'use strict';
-
 // modified from https://github.com/es-shims/es5-shim
 var has = Object.prototype.hasOwnProperty;
 var toStr = Object.prototype.toString;
@@ -2752,7 +2737,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./isArguments":49}],49:[function(_dereq_,module,exports){
+},{"./isArguments":48}],48:[function(_dereq_,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;

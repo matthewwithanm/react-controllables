@@ -1,6 +1,6 @@
 {
   "name": "react-controllables",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Easily create controllable components",
   "main": "./lib/index.js",
   "directories": {
