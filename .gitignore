@@ -1,3 +1,4 @@
 /node_modules/
 /test/tests-compiled.js
+/test/tests-mixin-compiled.js
 /lib/
