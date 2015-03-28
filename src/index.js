@@ -41,8 +41,9 @@ export default function(Component, controllableProps = []) {
     const callbackName = toCallbackName(prop);
     callbacks[callbackName] = function(value) {
       let originalCb = this.props[callbackName];
+      let oldValue = this.props[prop] == null ? this.state[prop] : this.props[prop];
       this.setState({[prop]: value});
-      if (originalCb) originalCb(value);
+      if (originalCb) originalCb(value, oldValue);
     };
   });
 
