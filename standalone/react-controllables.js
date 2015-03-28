@@ -64,9 +64,8 @@ var mapKeys = function (obj, mapper) {
 };
 
 module.exports = function (Component) {
-  var defaults = arguments[1] === undefined ? {} : arguments[1];
+  var controllableProps = arguments[1] === undefined ? [] : arguments[1];
 
-  var controllableProps = keys(defaults);
   var defaultsProps = controllableProps.map(toDefaultName);
 
   var callbacks = {};
@@ -91,8 +90,8 @@ module.exports = function (Component) {
 
       _get(Object.getPrototypeOf(ControllableWrapper.prototype), "constructor", this).apply(this, args);
 
-      // Merge the instance defaults and the class defaults.
-      this.state = assign({}, defaults, mapKeys(pick(this.props, defaultsProps), fromDefaultName));
+      // Get the initial state from the `default*` props.
+      this.state = mapKeys(pick(this.props, defaultsProps), fromDefaultName);
 
       // Create bound versions of the handlers.
       this.callbacks = mapValues(callbacks, function (fn) {

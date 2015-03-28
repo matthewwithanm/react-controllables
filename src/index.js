@@ -22,8 +22,7 @@ const mapKeys = (obj, mapper) => {
   return newObj;
 };
 
-export default function(Component, defaults = {}) {
-  const controllableProps = keys(defaults);
+export default function(Component, controllableProps = []) {
   const defaultsProps = controllableProps.map(toDefaultName);
 
   let callbacks = {};
@@ -40,10 +39,8 @@ export default function(Component, defaults = {}) {
     constructor(...args) {
       super(...args);
 
-      // Merge the instance defaults and the class defaults.
-      this.state = assign({}, defaults,
-        mapKeys(pick(this.props, defaultsProps), fromDefaultName)
-      );
+      // Get the initial state from the `default*` props.
+      this.state = mapKeys(pick(this.props, defaultsProps), fromDefaultName);
 
       // Create bound versions of the handlers.
       this.callbacks = mapValues(callbacks, (fn) => fn.bind(this));

@@ -18,7 +18,9 @@ class DumbThing extends React.Component {
   }
 }
 
-const Thing = Controllables.controllable(DumbThing, {value: 0});
+DumbThing.defaultProps = {value: 0};
+
+const Thing = Controllables.controllable(DumbThing, ['value']);
 
 
 function click(tree) {
