@@ -35,12 +35,12 @@ How
    or more props and corresponding `onPROPNAMEChange` callbacks.
 2. Use `controllable` to create a higher-order component from the dumb one.
 
-<small>
-  react-controllables used to be implemented with a mixin and have a different
-  (more complicated!) usage. The mixin is still included at
-  `react-controllables/mixin` (or `Controllables.Mixin` in the standalone build)
-  but deprecated. Switch!
-</small>
+<small><i>
+  Note: react-controllables used to be implemented with a mixin and have a
+  different (more complicated!) usage. The mixin is still included at
+  <code>react-controllables/mixin</code> (or <code>Controllables.Mixin</code> in
+  the standalone build) but deprecated. Switch!
+</i></small>
 
 
 Example
