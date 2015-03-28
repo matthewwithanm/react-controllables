@@ -52,14 +52,6 @@ selectedTabIndex prop.
 ```jsx
 class TabBar extends React.Component {
 
-  handleClick: function(event) {
-    // Call the `onSelectedTabIndexChange` callback with the new value.
-    if (!this.props.onSelectedTabIndexChange) return;
-    var el = event.target;
-    var index = Array.prototype.indexOf.call(el.parentNode.children, el);
-    this.props.onSelectedTabIndexChange(index);
-  }
-
   render: function() {
     var selectedTabIndex = this.props.selectedTabIndex;
     return (
@@ -69,6 +61,14 @@ class TabBar extends React.Component {
         <li className={ selectedTabIndex == 2 ? 'selected' }>Tab Two!</li>
       </ul>
     );
+  }
+
+  handleClick: function(event) {
+    // Call the `onSelectedTabIndexChange` callback with the new value.
+    if (!this.props.onSelectedTabIndexChange) return;
+    var el = event.target;
+    var index = Array.prototype.indexOf.call(el.parentNode.children, el);
+    this.props.onSelectedTabIndexChange(index);
   }
 
 }
