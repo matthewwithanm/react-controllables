@@ -1,6 +1,5 @@
 import React from 'react';
 import keys from 'object-keys';
-import assign from 'object-assign';
 import omit from 'lodash.omit';
 import pick from 'lodash.pick';
 import mapValues from 'lodash.mapValues';
@@ -20,6 +19,18 @@ const mapKeys = (obj, mapper) => {
     }
   }
   return newObj;
+};
+const merge = (...sources) => {
+  let target = {};
+  sources.forEach((source) => {
+    for (let k in source) {
+      if (!source.hasOwnProperty(k)) continue;
+      let val = source[k];
+      if (val == null) continue; // `null` and `undefined` are treated the same as a missing key
+      target[k] = val;
+    }
+  });
+  return target;
 };
 
 export default function(Component, controllableProps = []) {
@@ -47,8 +58,8 @@ export default function(Component, controllableProps = []) {
     }
 
     render() {
-      const props = assign(omit(this.props, defaultsProps), this.callbacks);
-      return <Component {...this.state} {...props} />;
+      const props = merge(this.state, omit(this.props, defaultsProps), this.callbacks);
+      return <Component {...props} />;
     }
   };
 }
