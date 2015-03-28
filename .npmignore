@@ -1,8 +1,8 @@
 /node_modules/
-/Gruntfile.coffee
+/gulpfile.js
 /test/
 /vendor/
 /bower.json
-/coffeelint.json
+/.eslintrc
 /src/
 /standalone/
