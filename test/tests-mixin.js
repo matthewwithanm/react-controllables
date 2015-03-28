@@ -1,5 +1,6 @@
 /*global React, chai, describe, it, Controllables*/
 const {assert} = chai;
+const {Simulate, findRenderedDOMComponentWithClass, findRenderedComponentWithType: find} = React.addons.TestUtils;
 
 
 const Thing = React.createClass({
@@ -11,14 +12,22 @@ const Thing = React.createClass({
   },
   render() {
     return (
-      <div>{ `VALUE:${ this.getControllableValue('value') }` }</div>
+      <div
+          className="clickme"
+          onClick={this.handleClick}>
+        { `VALUE:${ this.getControllableValue('value') }` }
+      </div>
     );
   },
-  click() {
-    // Let's pretend this is a click handler or something.
+  handleClick() {
     this.setState({value: this.getControllableValue('value') + 1});
   },
 });
+
+
+function click(tree) {
+  Simulate.click(findRenderedDOMComponentWithClass(tree, 'clickme'));
+}
 
 
 function assertRenderedIncludes(component, str) {
@@ -49,7 +58,7 @@ describe('mixin', () => {
     it('should not change the controllable value itself', () => {
       const el = document.createElement('div');
       const thing = React.render(<Thing value={2} />, el);
-      thing.click();
+      click(thing);
       assert.equal(thing.getControllableValue('value'), 2);
     });
 
@@ -62,7 +71,6 @@ describe('mixin', () => {
         render() {
           return (
             <Thing
-              ref="thing"
               value={this.state.value}
               onValueChange={this.handleValueChange} />
           );
@@ -70,9 +78,9 @@ describe('mixin', () => {
       });
       const el = document.createElement('div');
       const app = React.render(<App />, el);
-      app.refs.thing.click();
+      click(app);
       assert.equal(app.state.value, 3);
-      assert.equal(app.refs.thing.getControllableValue('value'), 3);
+      assert.equal(find(app, Thing).getControllableValue('value'), 3);
     });
 
     it('should invoke onBlahChange callbacks even when controlled', () => {
@@ -84,7 +92,6 @@ describe('mixin', () => {
         render() {
           return (
             <Thing
-              ref="thing"
               value={this.state.value}
               onValueChange={this.handleValueChange} />
           );
@@ -92,9 +99,9 @@ describe('mixin', () => {
       });
       const el = document.createElement('div');
       const app = React.render(<App />, el);
-      app.refs.thing.click();
+      click(app);
       assert.equal(app.state.value, 3);
-      assert.equal(app.refs.thing.getControllableValue('value'), 3);
+      assert.equal(find(app, Thing).getControllableValue('value'), 3);
     });
 
   });
