@@ -13,6 +13,8 @@ module.exports = { controllable: controllable, Mixin: Mixin };
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
+var _slicedToArray = function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; for (var _iterator = arr[Symbol.iterator](), _step; !(_step = _iterator.next()).done;) { _arr.push(_step.value); if (i && _arr.length === i) break; } return _arr; } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } };
+
 var _defineProperty = function (obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); };
 
 var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -22,6 +24,8 @@ var _get = function get(object, property, receiver) { var desc = Object.getOwnPr
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+module.exports = controllable;
 
 var React = _interopRequire((window.React));
 
@@ -75,8 +79,33 @@ var merge = function () {
   return target;
 };
 
-module.exports = function (Component) {
-  var controllableProps = arguments[1] === undefined ? [] : arguments[1];
+function controllable() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var Component = undefined,
+      controllableProps = undefined;
+
+  // Support [Python-style decorators](https://github.com/wycats/javascript-decorators)
+  if (args.length === 1) {
+    var _ref = args;
+
+    var _ref2 = _slicedToArray(_ref, 1);
+
+    controllableProps = _ref2[0];
+
+    return function (Component) {
+      return controllable(Component, controllableProps);
+    };
+  }
+
+  var _ref3 = args;
+
+  var _ref32 = _slicedToArray(_ref3, 2);
+
+  Component = _ref32[0];
+  controllableProps = _ref32[1];
 
   var defaultsProps = controllableProps.map(toDefaultName);
 
@@ -95,8 +124,8 @@ module.exports = function (Component) {
     function ControllableWrapper() {
       var _this = this;
 
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
       }
 
       _classCallCheck(this, ControllableWrapper);
@@ -125,7 +154,7 @@ module.exports = function (Component) {
 
     return ControllableWrapper;
   })(React.Component);
-};
+}
 },{"lodash.mapValues":6,"lodash.omit":17,"lodash.pick":35,"object-keys":47}],3:[function(_dereq_,module,exports){
 "use strict";
 
