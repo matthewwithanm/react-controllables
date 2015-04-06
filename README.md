@@ -146,4 +146,24 @@ Or only one!
 ```
 
 
+Decorator Support
+=================
+
+The react-controllables API is also designed to work with [JavaScript decorator
+proposal]. Decorators provide a very elegant way to use react-controllables (and
+higher-order components in general) if you're using a transpiler that supports
+them, like [Babel 5.0 or greater][2]:
+
+```jsx
+@controllable(['selectedTabIndex', 'color'])
+class TabBar extends React.Component {
+
+  // [SNIP] Body same as above.
+
+}
+```
+
+
 [1]: http://facebook.github.io/react/docs/forms.html#controlled-components
+[JavaScript decorator proposal]: https://github.com/wycats/javascript-decorators
+[2]: http://babeljs.io/blog/2015/03/31/5.0.0/#stage-1:-decorators
