@@ -33,7 +33,16 @@ const merge = (...sources) => {
   return target;
 };
 
-export default function(Component, controllableProps = []) {
+export default function controllable(...args) {
+  let Component, controllableProps;
+
+  // Support [Python-style decorators](https://github.com/wycats/javascript-decorators)
+  if (args.length === 1) {
+    [controllableProps] = args;
+    return (Component) => controllable(Component, controllableProps);
+  }
+
+  [Component, controllableProps] = args;
   const defaultsProps = controllableProps.map(toDefaultName);
 
   let callbacks = {};
