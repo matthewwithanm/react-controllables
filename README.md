@@ -147,7 +147,7 @@ Or only one!
 
 
 Decorator Support
-=================
+-----------------
 
 The react-controllables API is also designed to work with [JavaScript decorator
 proposal]. Decorators provide a very elegant way to use react-controllables (and
