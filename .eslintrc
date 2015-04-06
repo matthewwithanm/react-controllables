@@ -17,6 +17,7 @@
 
     "comma-dangle": [2, "always-multiline"],
     "no-floating-decimal": 2,
+    "no-shadow": 1,
 
     "indent": [2, 2, {"indentSwitchCase": true}],
     "brace-style": [2, "1tbs", {"allowSingleLine": true}],
