@@ -121,7 +121,7 @@ single component can have both controlled and uncontrolled values. For example,
 consider this variation of our TabBar:
 
 ```jsx
-TabBar = controllables(TabBar, ['selectedTabIndex', 'color']);
+TabBar = controllable(TabBar, ['selectedTabIndex', 'color']);
 ```
 
 We could have both "selectedTabIndex" and "color" be controlled:
