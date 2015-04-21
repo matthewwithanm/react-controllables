@@ -2,7 +2,7 @@ import React from 'react';
 import keys from 'object-keys';
 import omit from 'lodash.omit';
 import pick from 'lodash.pick';
-import mapValues from 'lodash.mapValues';
+import mapValues from 'lodash.mapvalues';
 
 
 const mkFirstFunc = (method) => (str) => str.slice(0, 1)[method]() + str.slice(1);
