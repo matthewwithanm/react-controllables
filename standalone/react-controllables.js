@@ -35,7 +35,7 @@ var omit = _interopRequire(_dereq_("lodash.omit"));
 
 var pick = _interopRequire(_dereq_("lodash.pick"));
 
-var mapValues = _interopRequire(_dereq_("lodash.mapValues"));
+var mapValues = _interopRequire(_dereq_("lodash.mapvalues"));
 
 var mkFirstFunc = function (method) {
   return function (str) {
@@ -155,7 +155,7 @@ function controllable() {
     return ControllableWrapper;
   })(React.Component);
 }
-},{"lodash.mapValues":6,"lodash.omit":17,"lodash.pick":35,"object-keys":47}],3:[function(_dereq_,module,exports){
+},{"lodash.mapvalues":6,"lodash.omit":17,"lodash.pick":35,"object-keys":47}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
