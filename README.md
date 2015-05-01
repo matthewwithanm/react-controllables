@@ -70,6 +70,13 @@ class TabBar extends React.Component {
     this.props.onSelectedTabIndexChange(index);
   }
 }
+
+TabBar.defaultProps = {selectedTabIndex: 0};
+
+TabBar.propTypes = {
+  selectedTabIndex: PropTypes.number.isRequired,
+  onSelectedTabIndexChange: PropTypes.func,
+};
 ```
 
 Next, use the controllable util to create a higher-order component, telling it
