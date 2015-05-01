@@ -51,26 +51,24 @@ selectedTabIndex prop.
 
 ```jsx
 class TabBar extends React.Component {
-
-  render: function() {
+  render() {
     var selectedTabIndex = this.props.selectedTabIndex;
     return (
       <ul onClick={ this.handleClick.bind(this) }>
-        <li className={ selectedTabIndex == 0 ? 'selected' }>Tab Zero!</li>
-        <li className={ selectedTabIndex == 1 ? 'selected' }>Tab One!</li>
-        <li className={ selectedTabIndex == 2 ? 'selected' }>Tab Two!</li>
+        <li className={ selectedTabIndex == 0 ? 'selected' : '' }>Tab Zero!</li>
+        <li className={ selectedTabIndex == 1 ? 'selected' : '' }>Tab One!</li>
+        <li className={ selectedTabIndex == 2 ? 'selected' : '' }>Tab Two!</li>
       </ul>
     );
   }
 
-  handleClick: function(event) {
+  handleClick(event) {
     // Call the `onSelectedTabIndexChange` callback with the new value.
     if (!this.props.onSelectedTabIndexChange) return;
     var el = event.target;
     var index = Array.prototype.indexOf.call(el.parentNode.children, el);
     this.props.onSelectedTabIndexChange(index);
   }
-
 }
 
 TabBar.defaultProps = {selectedTabIndex: 0};
