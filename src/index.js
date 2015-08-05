@@ -3,13 +3,13 @@ import keys from 'object-keys';
 import omit from 'lodash.omit';
 import pick from 'lodash.pick';
 import mapValues from 'lodash.mapvalues';
+import isArray from 'isarray';
 
 
 const mkFirstFunc = (method) => (str) => str.slice(0, 1)[method]() + str.slice(1);
 const lowerFirst = mkFirstFunc('toLowerCase');
 const capFirst = mkFirstFunc('toUpperCase');
 const toCallbackName = (prop) => `on${ capFirst(prop) }Change`;
-const toDefaultName = (prop) => `default${ capFirst(prop) }`;
 const fromDefaultName = (prop) => lowerFirst(prop.slice(7));
 const mapKeys = (obj, mapper) => {
   let newObj = {};
@@ -33,26 +33,50 @@ const merge = (...sources) => {
   return target;
 };
 
+const isDefault = (value, key) => /^default/.test(key);
+const omitDefaults = props => omit(props, isDefault);
+const pickDefaults = props => pick(props, isDefault);
+
+
 export default function controllable(...args) {
-  let Component, controllableProps;
+  let Component, reducers;
 
   // Support [Python-style decorators](https://github.com/wycats/javascript-decorators)
   if (args.length === 1) {
-    [controllableProps] = args;
-    return (Component) => controllable(Component, controllableProps);
+    [reducers] = args;
+    return (Component) => controllable(Component, reducers);
   }
 
-  [Component, controllableProps] = args;
-  const defaultsProps = controllableProps.map(toDefaultName);
+  [Component, reducers] = args;
 
-  let callbacks = {};
-  controllableProps.forEach((prop) => {
-    const callbackName = toCallbackName(prop);
-    callbacks[callbackName] = function(value) {
-      let originalCb = this.props[callbackName];
-      let oldValue = this.props[prop] == null ? this.state[prop] : this.props[prop];
-      this.setState({[prop]: value});
-      if (originalCb) originalCb(value, oldValue);
+  if (isArray(reducers)) {
+    // If you pass an array of prop names, you'll essentially use the callbacks
+    // as action creators. So we need to build reducers for those.
+    const controllableProps = reducers;
+    reducers = {};
+    controllableProps.forEach(prop => {
+      const callbackName = toCallbackName(prop);
+      reducers[callbackName] = (currentState, value) => ({[prop]: value});
+    });
+  }
+
+  // Create action creators from the reducers.
+  const actionCreators = mapValues(reducers, reducer => {
+    return function(...args) {
+      // Calculate the new state.
+      const currentProps = merge(this.state, omitDefaults(this.props), this.boundActionCreators);
+      const newState = reducer(currentProps, ...args);
+
+      // Update the state.
+      this.setState(newState);
+
+      // If there are callbacks for the changed values, invoke them.
+      keys(newState).forEach(prop => {
+        const newValue = newState[prop];
+        const callbackName = toCallbackName(prop);
+        const cb = this.props[callbackName];
+        if (cb) cb(newValue);
+      });
     };
   });
 
@@ -61,14 +85,14 @@ export default function controllable(...args) {
       super(...args);
 
       // Get the initial state from the `default*` props.
-      this.state = mapKeys(pick(this.props, defaultsProps), fromDefaultName);
+      this.state = mapKeys(pickDefaults(this.props), fromDefaultName);
 
-      // Create bound versions of the handlers.
-      this.callbacks = mapValues(callbacks, (fn) => fn.bind(this));
+      // Create bound versions of the action creators.
+      this.boundActionCreators = mapValues(actionCreators, fn => fn.bind(this));
     }
 
     render() {
-      const props = merge(this.state, omit(this.props, defaultsProps), this.callbacks);
+      const props = merge(this.state, omitDefaults(this.props), this.boundActionCreators);
       return <Component {...props} />;
     }
   };

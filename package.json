@@ -11,7 +11,8 @@
     "lodash.mapvalues": "^3.0.0",
     "lodash.omit": "^3.1.0",
     "lodash.pick": "^3.1.0",
-    "object-keys": "^1.0.3"
+    "object-keys": "^1.0.3",
+    "isarray": "0.0.1"
   },
   "devDependencies": {
     "babel": "^4.7.16",
