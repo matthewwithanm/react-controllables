@@ -37,6 +37,8 @@ var pick = _interopRequire(_dereq_("lodash.pick"));
 
 var mapValues = _interopRequire(_dereq_("lodash.mapvalues"));
 
+var isArray = _interopRequire(_dereq_("isarray"));
+
 var mkFirstFunc = function (method) {
   return function (str) {
     return str.slice(0, 1)[method]() + str.slice(1);
@@ -46,9 +48,6 @@ var lowerFirst = mkFirstFunc("toLowerCase");
 var capFirst = mkFirstFunc("toUpperCase");
 var toCallbackName = function (prop) {
   return "on" + capFirst(prop) + "Change";
-};
-var toDefaultName = function (prop) {
-  return "default" + capFirst(prop);
 };
 var fromDefaultName = function (prop) {
   return lowerFirst(prop.slice(7));
@@ -79,13 +78,23 @@ var merge = function () {
   return target;
 };
 
+var isDefault = function (value, key) {
+  return /^default/.test(key);
+};
+var omitDefaults = function (props) {
+  return omit(props, isDefault);
+};
+var pickDefaults = function (props) {
+  return pick(props, isDefault);
+};
+
 function controllable() {
   for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
     args[_key] = arguments[_key];
   }
 
   var Component = undefined,
-      controllableProps = undefined;
+      reducers = undefined;
 
   // Support [Python-style decorators](https://github.com/wycats/javascript-decorators)
   if (args.length === 1) {
@@ -93,10 +102,10 @@ function controllable() {
 
     var _ref2 = _slicedToArray(_ref, 1);
 
-    controllableProps = _ref2[0];
+    reducers = _ref2[0];
 
     return function (Component) {
-      return controllable(Component, controllableProps);
+      return controllable(Component, reducers);
     };
   }
 
@@ -105,18 +114,44 @@ function controllable() {
   var _ref32 = _slicedToArray(_ref3, 2);
 
   Component = _ref32[0];
-  controllableProps = _ref32[1];
+  reducers = _ref32[1];
 
-  var defaultsProps = controllableProps.map(toDefaultName);
+  if (isArray(reducers)) {
+    // If you pass an array of prop names, you'll essentially use the callbacks
+    // as action creators. So we need to build reducers for those.
+    var controllableProps = reducers;
+    reducers = {};
+    controllableProps.forEach(function (prop) {
+      var callbackName = toCallbackName(prop);
+      reducers[callbackName] = function (currentState, value) {
+        return _defineProperty({}, prop, value);
+      };
+    });
+  }
 
-  var callbacks = {};
-  controllableProps.forEach(function (prop) {
-    var callbackName = toCallbackName(prop);
-    callbacks[callbackName] = function (value) {
-      var originalCb = this.props[callbackName];
-      var oldValue = this.props[prop] == null ? this.state[prop] : this.props[prop];
-      this.setState(_defineProperty({}, prop, value));
-      if (originalCb) originalCb(value, oldValue);
+  // Create action creators from the reducers.
+  var actionCreators = mapValues(reducers, function (reducer) {
+    return function () {
+      var _this = this;
+
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
+      }
+
+      // Calculate the new state.
+      var currentProps = merge(this.state, omitDefaults(this.props), this.boundActionCreators);
+      var newState = reducer.apply(undefined, [currentProps].concat(args));
+
+      // Update the state.
+      this.setState(newState);
+
+      // If there are callbacks for the changed values, invoke them.
+      keys(newState).forEach(function (prop) {
+        var newValue = newState[prop];
+        var callbackName = toCallbackName(prop);
+        var cb = _this.props[callbackName];
+        if (cb) cb(newValue);
+      });
     };
   });
 
@@ -133,10 +168,10 @@ function controllable() {
       _get(Object.getPrototypeOf(ControllableWrapper.prototype), "constructor", this).apply(this, args);
 
       // Get the initial state from the `default*` props.
-      this.state = mapKeys(pick(this.props, defaultsProps), fromDefaultName);
+      this.state = mapKeys(pickDefaults(this.props), fromDefaultName);
 
-      // Create bound versions of the handlers.
-      this.callbacks = mapValues(callbacks, function (fn) {
+      // Create bound versions of the action creators.
+      this.boundActionCreators = mapValues(actionCreators, function (fn) {
         return fn.bind(_this);
       });
     }
@@ -146,7 +181,7 @@ function controllable() {
     _createClass(ControllableWrapper, {
       render: {
         value: function render() {
-          var props = merge(this.state, omit(this.props, defaultsProps), this.callbacks);
+          var props = merge(this.state, omitDefaults(this.props), this.boundActionCreators);
           return React.createElement(Component, props);
         }
       }
@@ -155,7 +190,7 @@ function controllable() {
     return ControllableWrapper;
   })(React.Component);
 }
-},{"lodash.mapvalues":6,"lodash.omit":17,"lodash.pick":35,"object-keys":47}],3:[function(_dereq_,module,exports){
+},{"isarray":6,"lodash.mapvalues":7,"lodash.omit":18,"lodash.pick":36,"object-keys":48}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -322,6 +357,11 @@ module.exports = invariant;
 
 }).call(this,_dereq_("/Users/mjt/Code/projects/react-controllables/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
 },{"/Users/mjt/Code/projects/react-controllables/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":4}],6:[function(_dereq_,module,exports){
+module.exports = Array.isArray || function (arr) {
+  return Object.prototype.toString.call(arr) == '[object Array]';
+};
+
+},{}],7:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -395,7 +435,7 @@ function mapValues(object, iteratee, thisArg) {
 
 module.exports = mapValues;
 
-},{"lodash._basecallback":7,"lodash._basefor":12,"lodash.keys":13}],7:[function(_dereq_,module,exports){
+},{"lodash._basecallback":8,"lodash._basefor":13,"lodash.keys":14}],8:[function(_dereq_,module,exports){
 /**
  * lodash 3.2.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -619,7 +659,7 @@ function identity(value) {
 
 module.exports = baseCallback;
 
-},{"lodash._baseisequal":8,"lodash._bindcallback":11,"lodash.keys":13}],8:[function(_dereq_,module,exports){
+},{"lodash._baseisequal":9,"lodash._bindcallback":12,"lodash.keys":14}],9:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.3 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -929,7 +969,7 @@ function equalObjects(object, other, equalFunc, customizer, isLoose, stackA, sta
 
 module.exports = baseIsEqual;
 
-},{"lodash.isarray":9,"lodash.istypedarray":10,"lodash.keys":13}],9:[function(_dereq_,module,exports){
+},{"lodash.isarray":10,"lodash.istypedarray":11,"lodash.keys":14}],10:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1089,7 +1129,7 @@ function escapeRegExp(string) {
 
 module.exports = isArray;
 
-},{}],10:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1201,7 +1241,7 @@ function isTypedArray(value) {
 
 module.exports = isTypedArray;
 
-},{}],11:[function(_dereq_,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1267,7 +1307,7 @@ function identity(value) {
 
 module.exports = bindCallback;
 
-},{}],12:[function(_dereq_,module,exports){
+},{}],13:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1355,7 +1395,7 @@ function isObject(value) {
 
 module.exports = baseFor;
 
-},{}],13:[function(_dereq_,module,exports){
+},{}],14:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.5 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1590,7 +1630,7 @@ function keysIn(object) {
 
 module.exports = keys;
 
-},{"lodash.isarguments":14,"lodash.isarray":15,"lodash.isnative":16}],14:[function(_dereq_,module,exports){
+},{"lodash.isarguments":15,"lodash.isarray":16,"lodash.isnative":17}],15:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1665,9 +1705,9 @@ function isArguments(value) {
 
 module.exports = isArguments;
 
-},{}],15:[function(_dereq_,module,exports){
-module.exports=_dereq_(9)
 },{}],16:[function(_dereq_,module,exports){
+module.exports=_dereq_(10)
+},{}],17:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1784,7 +1824,7 @@ function escapeRegExp(string) {
 
 module.exports = isNative;
 
-},{}],17:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 /**
  * lodash 3.1.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1846,7 +1886,7 @@ var omit = restParam(function(object, props) {
 
 module.exports = omit;
 
-},{"lodash._arraymap":18,"lodash._basedifference":19,"lodash._baseflatten":24,"lodash._bindcallback":27,"lodash._pickbyarray":28,"lodash._pickbycallback":29,"lodash.keysin":31,"lodash.restparam":34}],18:[function(_dereq_,module,exports){
+},{"lodash._arraymap":19,"lodash._basedifference":20,"lodash._baseflatten":25,"lodash._bindcallback":28,"lodash._pickbyarray":29,"lodash._pickbycallback":30,"lodash.keysin":32,"lodash.restparam":35}],19:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1878,7 +1918,7 @@ function arrayMap(array, iteratee) {
 
 module.exports = arrayMap;
 
-},{}],19:[function(_dereq_,module,exports){
+},{}],20:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1940,7 +1980,7 @@ function baseDifference(array, values) {
 
 module.exports = baseDifference;
 
-},{"lodash._baseindexof":20,"lodash._cacheindexof":21,"lodash._createcache":22}],20:[function(_dereq_,module,exports){
+},{"lodash._baseindexof":21,"lodash._cacheindexof":22,"lodash._createcache":23}],21:[function(_dereq_,module,exports){
 /**
  * lodash 3.1.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1999,7 +2039,7 @@ function indexOfNaN(array, fromIndex, fromRight) {
 
 module.exports = baseIndexOf;
 
-},{}],21:[function(_dereq_,module,exports){
+},{}],22:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -2054,7 +2094,7 @@ function isObject(value) {
 
 module.exports = cacheIndexOf;
 
-},{}],22:[function(_dereq_,module,exports){
+},{}],23:[function(_dereq_,module,exports){
 (function (global){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
@@ -2171,9 +2211,9 @@ SetCache.prototype.push = cachePush;
 module.exports = createCache;
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"lodash.isnative":23}],23:[function(_dereq_,module,exports){
-module.exports=_dereq_(16)
-},{}],24:[function(_dereq_,module,exports){
+},{"lodash.isnative":24}],24:[function(_dereq_,module,exports){
+module.exports=_dereq_(17)
+},{}],25:[function(_dereq_,module,exports){
 /**
  * lodash 3.1.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -2255,13 +2295,13 @@ function isLength(value) {
 
 module.exports = baseFlatten;
 
-},{"lodash.isarguments":25,"lodash.isarray":26}],25:[function(_dereq_,module,exports){
-module.exports=_dereq_(14)
-},{}],26:[function(_dereq_,module,exports){
-module.exports=_dereq_(9)
+},{"lodash.isarguments":26,"lodash.isarray":27}],26:[function(_dereq_,module,exports){
+module.exports=_dereq_(15)
 },{}],27:[function(_dereq_,module,exports){
-module.exports=_dereq_(11)
+module.exports=_dereq_(10)
 },{}],28:[function(_dereq_,module,exports){
+module.exports=_dereq_(12)
+},{}],29:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -2336,7 +2376,7 @@ function isObject(value) {
 
 module.exports = pickByArray;
 
-},{}],29:[function(_dereq_,module,exports){
+},{}],30:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -2382,9 +2422,9 @@ function pickByCallback(object, predicate) {
 
 module.exports = pickByCallback;
 
-},{"lodash._basefor":30,"lodash.keysin":31}],30:[function(_dereq_,module,exports){
-module.exports=_dereq_(12)
-},{}],31:[function(_dereq_,module,exports){
+},{"lodash._basefor":31,"lodash.keysin":32}],31:[function(_dereq_,module,exports){
+module.exports=_dereq_(13)
+},{}],32:[function(_dereq_,module,exports){
 /**
  * lodash 3.0.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -2548,11 +2588,11 @@ function keysIn(object) {
 
 module.exports = keysIn;
 
-},{"lodash.isarguments":32,"lodash.isarray":33}],32:[function(_dereq_,module,exports){
-module.exports=_dereq_(14)
-},{}],33:[function(_dereq_,module,exports){
-module.exports=_dereq_(9)
+},{"lodash.isarguments":33,"lodash.isarray":34}],33:[function(_dereq_,module,exports){
+module.exports=_dereq_(15)
 },{}],34:[function(_dereq_,module,exports){
+module.exports=_dereq_(10)
+},{}],35:[function(_dereq_,module,exports){
 /**
  * lodash 3.6.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -2621,7 +2661,7 @@ function restParam(func, start) {
 
 module.exports = restParam;
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 /**
  * lodash 3.1.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -2673,29 +2713,29 @@ var pick = restParam(function(object, props) {
 
 module.exports = pick;
 
-},{"lodash._baseflatten":36,"lodash._bindcallback":39,"lodash._pickbyarray":40,"lodash._pickbycallback":41,"lodash.restparam":46}],36:[function(_dereq_,module,exports){
-module.exports=_dereq_(24)
-},{"lodash.isarguments":37,"lodash.isarray":38}],37:[function(_dereq_,module,exports){
-module.exports=_dereq_(14)
-},{}],38:[function(_dereq_,module,exports){
-module.exports=_dereq_(9)
+},{"lodash._baseflatten":37,"lodash._bindcallback":40,"lodash._pickbyarray":41,"lodash._pickbycallback":42,"lodash.restparam":47}],37:[function(_dereq_,module,exports){
+module.exports=_dereq_(25)
+},{"lodash.isarguments":38,"lodash.isarray":39}],38:[function(_dereq_,module,exports){
+module.exports=_dereq_(15)
 },{}],39:[function(_dereq_,module,exports){
-module.exports=_dereq_(11)
+module.exports=_dereq_(10)
 },{}],40:[function(_dereq_,module,exports){
-module.exports=_dereq_(28)
-},{}],41:[function(_dereq_,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"lodash._basefor":42,"lodash.keysin":43}],42:[function(_dereq_,module,exports){
 module.exports=_dereq_(12)
-},{}],43:[function(_dereq_,module,exports){
-module.exports=_dereq_(31)
-},{"lodash.isarguments":44,"lodash.isarray":45}],44:[function(_dereq_,module,exports){
-module.exports=_dereq_(14)
-},{}],45:[function(_dereq_,module,exports){
-module.exports=_dereq_(9)
+},{}],41:[function(_dereq_,module,exports){
+module.exports=_dereq_(29)
+},{}],42:[function(_dereq_,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"lodash._basefor":43,"lodash.keysin":44}],43:[function(_dereq_,module,exports){
+module.exports=_dereq_(13)
+},{}],44:[function(_dereq_,module,exports){
+module.exports=_dereq_(32)
+},{"lodash.isarguments":45,"lodash.isarray":46}],45:[function(_dereq_,module,exports){
+module.exports=_dereq_(15)
 },{}],46:[function(_dereq_,module,exports){
-module.exports=_dereq_(34)
+module.exports=_dereq_(10)
 },{}],47:[function(_dereq_,module,exports){
+module.exports=_dereq_(35)
+},{}],48:[function(_dereq_,module,exports){
 'use strict';
 
 // modified from https://github.com/es-shims/es5-shim
@@ -2766,7 +2806,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./isArguments":48}],48:[function(_dereq_,module,exports){
+},{"./isArguments":49}],49:[function(_dereq_,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
