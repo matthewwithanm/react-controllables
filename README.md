@@ -169,8 +169,8 @@ class Counter extends React.Component {
   render() {
     return (
       <div>
-        <div onClick={this.props.add(1)}}>+</div>
-        <div onClick={this.props.add(-1)}}>-</div>
+        <div onClick={this.props.add(1)}>+</div>
+        <div onClick={this.props.add(-1)}>-</div>
         <div>Current: {this.props.count}</div>
       </div>
     );
