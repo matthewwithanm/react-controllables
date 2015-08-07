@@ -9,7 +9,7 @@ import isArray from 'isarray';
 const mkFirstFunc = method => str => str.slice(0, 1)[method]() + str.slice(1);
 const lowerFirst = mkFirstFunc('toLowerCase');
 const capFirst = mkFirstFunc('toUpperCase');
-const toCallbackName = prop => `on${ capFirst(prop) }Change`;
+const toCallbackName = prop => `on${ prop === 'value' ? '' : capFirst(prop) }Change`;
 const fromDefaultName = prop => lowerFirst(prop.slice(7));
 const mapKeys = (obj, mapper) => {
   let newObj = {};

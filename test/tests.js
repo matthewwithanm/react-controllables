@@ -14,7 +14,7 @@ class DumbThing extends React.Component {
     );
   }
   handleClick() {
-    if (this.props.onValueChange) this.props.onValueChange(this.props.value + 1);
+    if (this.props.onChange) this.props.onChange(this.props.value + 1);
   }
 }
 
@@ -60,7 +60,7 @@ describe('higher-order component', () => {
       assert.equal(thing.props.value, 2);
     });
 
-    it('should invoke onBlahChange callbacks', () => {
+    it('should invoke change callbacks', () => {
       const App = React.createClass({
         getInitialState() { return {value: 2}; },
         handleValueChange(newValue, oldValue) {
@@ -70,7 +70,7 @@ describe('higher-order component', () => {
           return (
             <Thing
               value={this.state.value}
-              onValueChange={this.handleValueChange} />
+              onChange={this.handleValueChange} />
           );
         },
       });
@@ -81,7 +81,7 @@ describe('higher-order component', () => {
       assert.equal(find(app, DumbThing).props.value, 3);
     });
 
-    it('should invoke onBlahChange callbacks even when controlled', () => {
+    it('should invoke change callbacks even when controlled', () => {
       const App = React.createClass({
         getInitialState() { return {value: 2}; },
         handleValueChange(newValue, oldValue) {
@@ -91,7 +91,7 @@ describe('higher-order component', () => {
           return (
             <Thing
               value={this.state.value}
-              onValueChange={this.handleValueChange} />
+              onChange={this.handleValueChange} />
           );
         },
       });

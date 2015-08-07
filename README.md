@@ -36,6 +36,12 @@ How
 2. Use `controllable` to create a higher-order component from the dumb one.
 
 <small><i>
+  Note: There's one exception to the `onPROPNAMEChange` convention: if the prop
+  name is "value," the callback will be simply "onChange". This is done to match
+  the conventions in React itself.
+</i></small>
+
+<small><i>
   Note: react-controllables used to be implemented with a mixin and have a
   different (more complicated!) usage. The mixin is still included at
   <code>react-controllables/mixin</code> (or <code>Controllables.Mixin</code> in
