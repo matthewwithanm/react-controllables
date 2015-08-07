@@ -47,7 +47,7 @@ var mkFirstFunc = function (method) {
 var lowerFirst = mkFirstFunc("toLowerCase");
 var capFirst = mkFirstFunc("toUpperCase");
 var toCallbackName = function (prop) {
-  return "on" + capFirst(prop) + "Change";
+  return "on" + (prop === "value" ? "" : capFirst(prop)) + "Change";
 };
 var fromDefaultName = function (prop) {
   return lowerFirst(prop.slice(7));
