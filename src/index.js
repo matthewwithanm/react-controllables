@@ -6,11 +6,11 @@ import mapValues from 'lodash.mapvalues';
 import isArray from 'isarray';
 
 
-const mkFirstFunc = (method) => (str) => str.slice(0, 1)[method]() + str.slice(1);
+const mkFirstFunc = method => str => str.slice(0, 1)[method]() + str.slice(1);
 const lowerFirst = mkFirstFunc('toLowerCase');
 const capFirst = mkFirstFunc('toUpperCase');
-const toCallbackName = (prop) => `on${ capFirst(prop) }Change`;
-const fromDefaultName = (prop) => lowerFirst(prop.slice(7));
+const toCallbackName = prop => `on${ capFirst(prop) }Change`;
+const fromDefaultName = prop => lowerFirst(prop.slice(7));
 const mapKeys = (obj, mapper) => {
   let newObj = {};
   for (let k in obj) {
@@ -22,7 +22,7 @@ const mapKeys = (obj, mapper) => {
 };
 const merge = (...sources) => {
   let target = {};
-  sources.forEach((source) => {
+  sources.forEach(source => {
     for (let k in source) {
       if (!source.hasOwnProperty(k)) continue;
       let val = source[k];
@@ -44,7 +44,7 @@ export default function controllable(...args) {
   // Support [Python-style decorators](https://github.com/wycats/javascript-decorators)
   if (args.length === 1) {
     [reducers] = args;
-    return (Component) => controllable(Component, reducers);
+    return Component => controllable(Component, reducers);
   }
 
   [Component, reducers] = args;
