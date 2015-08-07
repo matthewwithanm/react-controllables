@@ -71,7 +71,14 @@ var merge = function () {
     for (var k in source) {
       if (!source.hasOwnProperty(k)) continue;
       var val = source[k];
-      if (val == null) continue; // `null` and `undefined` are treated the same as a missing key
+
+      // Treat `undefined` the same as a missing key. React also does this for
+      // `null`, but that only works because their controlled components can use
+      // an empty string to represent "no value." In the general case, we need
+      // some way to control a component but give it "no value." We use `null`
+      // for that. See GH-1
+      if (val === undefined) continue;
+
       target[k] = val;
     }
   });
