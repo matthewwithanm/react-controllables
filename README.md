@@ -148,53 +148,6 @@ Or only one!
 ```
 
 
-Reducers
---------
-
-In the examples above, the value passed to the the `onPROPNAMEChange` callback
-was then just passed back to the dumb component as a prop. However, sometimes
-calculating state depends on the current state. In those cases, you can pass
-`controllable` a map of reducer functions for determining the new state. For
-example, a counter:
-
-```js
-@controllable({
-  add: (currentProps, delta) => ({count: currentProps.count + delta}),
-})
-class Counter extends React.Component {
-
-  static propTypes = {
-    count: React.PropTypes.number,
-    add: React.PropTypes.func,
-  }
-
-  static defaultProps = {
-    count: 0,
-  }
-
-  render() {
-    return (
-      <div>
-        <div onClick={this.props.add(1)}>+</div>
-        <div onClick={this.props.add(-1)}>-</div>
-        <div>Current: {this.props.count}</div>
-      </div>
-    );
-  }
-}
-```
-
-Here, the `add` function will control the local state of the wrapping component.
-Clicking on the + and - buttons will cause it to be called with the current
-props and either a `1` or `-1`. (This is similar to a bound action creator in
-Redux.) The result will be used to update the state. If an `onCountChange`
-callback was passed to your component, it will automatically be called with the
-new value.
-
-You can think of this as adding a lightweight, optional store to your component
-that only gets used when the component is "uncontrolled."
-
-
 Decorator Support
 -----------------
 
