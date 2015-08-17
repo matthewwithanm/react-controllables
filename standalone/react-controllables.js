@@ -13,8 +13,6 @@ module.exports = { controllable: controllable, Mixin: Mixin };
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var _slicedToArray = function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; for (var _iterator = arr[Symbol.iterator](), _step; !(_step = _iterator.next()).done;) { _arr.push(_step.value); if (i && _arr.length === i) break; } return _arr; } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } };
-
 var _defineProperty = function (obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); };
 
 var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -94,47 +92,26 @@ var omitDefaults = function (props) {
 var pickDefaults = function (props) {
   return pick(props, isDefault);
 };
+var noOpInitialize = function () {};
 
 function controllable() {
   for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
     args[_key] = arguments[_key];
   }
 
-  var Component = undefined,
-      reducers = undefined;
-
   // Support [Python-style decorators](https://github.com/wycats/javascript-decorators)
   if (args.length === 1) {
-    var _ref = args;
-
-    var _ref2 = _slicedToArray(_ref, 1);
-
-    reducers = _ref2[0];
-
     return function (Component) {
-      return controllable(Component, reducers);
+      return controllable.apply(undefined, [Component].concat(args));
     };
-  }
+  }var Component = args[0];
+  var propsOrStateManager = args[1];
 
-  var _ref3 = args;
+  var _createStateManager = createStateManager(propsOrStateManager);
 
-  var _ref32 = _slicedToArray(_ref3, 2);
-
-  Component = _ref32[0];
-  reducers = _ref32[1];
-
-  if (isArray(reducers)) {
-    // If you pass an array of prop names, you'll essentially use the callbacks
-    // as action creators. So we need to build reducers for those.
-    var controllableProps = reducers;
-    reducers = {};
-    controllableProps.forEach(function (prop) {
-      var callbackName = toCallbackName(prop);
-      reducers[callbackName] = function (currentState, value) {
-        return _defineProperty({}, prop, value);
-      };
-    });
-  }
+  var reducers = _createStateManager.reducers;
+  var _createStateManager$initialize = _createStateManager.initialize;
+  var initialize = _createStateManager$initialize === undefined ? noOpInitialize : _createStateManager$initialize;
 
   // Create action creators from the reducers.
   var actionCreators = mapValues(reducers, function (reducer) {
@@ -175,7 +152,9 @@ function controllable() {
       _get(Object.getPrototypeOf(ControllableWrapper.prototype), "constructor", this).apply(this, args);
 
       // Get the initial state from the `default*` props.
-      this.state = mapKeys(pickDefaults(this.props), fromDefaultName);
+      var instanceInitialState = mapKeys(pickDefaults(this.props), fromDefaultName);
+      var childProps = merge(instanceInitialState, omitDefaults(this.props));
+      this.state = merge(instanceInitialState, initialize(childProps));
 
       // Create bound versions of the action creators.
       this.boundActionCreators = mapValues(actionCreators, function (fn) {
@@ -196,6 +175,21 @@ function controllable() {
 
     return ControllableWrapper;
   })(React.Component);
+}
+
+function createStateManager(propsOrStateManager) {
+  // We've already got them!
+  if (!isArray(propsOrStateManager)) {
+    return propsOrStateManager;
+  } // Build them from an array of controllable props.
+  return {
+    reducers: propsOrStateManager.reduce(function (reducers, prop) {
+      var callbackName = toCallbackName(prop);
+      reducers[callbackName] = function (currentState, value) {
+        return _defineProperty({}, prop, value);
+      };
+      return reducers;
+    }, {}) };
 }
 },{"isarray":6,"lodash.mapvalues":7,"lodash.omit":18,"lodash.pick":36,"object-keys":48}],3:[function(_dereq_,module,exports){
 "use strict";
