@@ -43,29 +43,15 @@ const merge = (...sources) => {
 const isDefault = (value, key) => /^default/.test(key);
 const omitDefaults = props => omit(props, isDefault);
 const pickDefaults = props => pick(props, isDefault);
+const noOpInitialize = () => {};
 
 
 export default function controllable(...args) {
-  let Component, reducers;
-
   // Support [Python-style decorators](https://github.com/wycats/javascript-decorators)
-  if (args.length === 1) {
-    [reducers] = args;
-    return Component => controllable(Component, reducers);
-  }
+  if (args.length === 1) return Component => controllable(Component, ...args);
 
-  [Component, reducers] = args;
-
-  if (isArray(reducers)) {
-    // If you pass an array of prop names, you'll essentially use the callbacks
-    // as action creators. So we need to build reducers for those.
-    const controllableProps = reducers;
-    reducers = {};
-    controllableProps.forEach(prop => {
-      const callbackName = toCallbackName(prop);
-      reducers[callbackName] = (currentState, value) => ({[prop]: value});
-    });
-  }
+  const [Component, propsOrStateManager] = args;
+  let {reducers, initialize = noOpInitialize} = createStateManager(propsOrStateManager);
 
   // Create action creators from the reducers.
   const actionCreators = mapValues(reducers, reducer => {
@@ -92,7 +78,9 @@ export default function controllable(...args) {
       super(...args);
 
       // Get the initial state from the `default*` props.
-      this.state = mapKeys(pickDefaults(this.props), fromDefaultName);
+      const instanceInitialState = mapKeys(pickDefaults(this.props), fromDefaultName);
+      const childProps = merge(instanceInitialState, omitDefaults(this.props));
+      this.state = merge(instanceInitialState, initialize(childProps));
 
       // Create bound versions of the action creators.
       this.boundActionCreators = mapValues(actionCreators, fn => fn.bind(this));
@@ -102,5 +90,19 @@ export default function controllable(...args) {
       const props = merge(this.state, omitDefaults(this.props), this.boundActionCreators);
       return <Component {...props} />;
     }
+  };
+}
+
+function createStateManager(propsOrStateManager) {
+  // We've already got them!
+  if (!isArray(propsOrStateManager)) return propsOrStateManager;
+
+  // Build them from an array of controllable props.
+  return {
+    reducers: propsOrStateManager.reduce((reducers, prop) => {
+      const callbackName = toCallbackName(prop);
+      reducers[callbackName] = (currentState, value) => ({[prop]: value});
+      return reducers;
+    }, {}),
   };
 }
